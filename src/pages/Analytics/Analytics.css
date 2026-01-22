@@ -1,0 +1,202 @@
+.analytics-container {
+  padding: clamp(1.5rem, 4vw, 2rem);
+}
+
+.analytics-header {
+  margin-bottom: clamp(2rem, 5vw, 2.5rem);
+}
+
+.analytics-header h2 {
+  margin: 0 0 clamp(0.5rem, 1vw, 0.75rem) 0;
+  color: var(--dark-color);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.analytics-header p {
+  margin: 0;
+  color: #666;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(300px, 45vw, 1fr), 1fr));
+  gap: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: clamp(2rem, 5vw, 2.5rem);
+}
+
+.chart-card {
+  background: white;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  border-left: 4px solid transparent;
+}
+
+.chart-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  border-left-color: var(--primary-color);
+}
+
+.chart-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.chart-card h3 {
+  margin: 0 0 clamp(1rem, 3vw, 1.5rem) 0;
+  color: var(--dark-color);
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.chart-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 2px;
+}
+
+.chart-container {
+  height: clamp(250px, 60vh, 400px);
+  position: relative;
+  min-height: 250px;
+}
+
+.analytics-summary {
+  margin-top: clamp(2rem, 5vw, 2.5rem);
+}
+
+.summary-card {
+  background: white;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: var(--transition);
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card h3 {
+  margin: 0 0 clamp(1.5rem, 4vw, 2rem) 0;
+  color: var(--dark-color);
+  font-size: clamp(1.1rem, 3vw, 1.3rem);
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.summary-card h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 2px;
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(180px, 30vw, 200px), 1fr));
+  gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(1.25rem, 3vw, 1.5rem);
+  background: #f9f9f9;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-item:hover {
+  transform: translateY(-3px);
+  background: #f5f5f5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.summary-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.summary-label {
+  color: #666;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  margin-bottom: clamp(0.5rem, 1.5vw, 0.75rem);
+  font-weight: 500;
+}
+
+.summary-value {
+  font-size: clamp(1.25rem, 4vw, 1.5rem);
+  font-weight: 600;
+  color: var(--dark-color);
+  line-height: 1.2;
+}
+
+.summary-value.profit {
+  color: var(--success-color);
+}
+
+.summary-value.loss {
+  color: var(--danger-color);
+}
+
+/* 响应式设计优化 */
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-container {
+    height: clamp(250px, 50vh, 350px);
+  }
+  
+  .summary-stats {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-container {
+    padding: 1rem;
+  }
+  
+  .chart-card {
+    padding: 1.25rem;
+  }
+  
+  .summary-card {
+    padding: 1.25rem;
+  }
+  
+  .summary-item {
+    padding: 1rem;
+  }
+  
+  .chart-container {
+    height: 280px;
+  }
+}

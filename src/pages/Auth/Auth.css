@@ -1,0 +1,144 @@
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  padding: 1rem;
+}
+
+.auth-form {
+  background: white;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border-radius: var(--border-radius);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  color: var(--dark-color);
+  transition: var(--transition);
+}
+
+.auth-form:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.auth-form h2 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  font-size: clamp(1.5rem, 4vw, 1.75rem);
+  text-align: center;
+  color: var(--dark-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-form p {
+  margin-bottom: 1.75rem;
+  text-align: center;
+  color: #666;
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #555;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+}
+
+.form-group input {
+  width: 100%;
+  padding: clamp(0.75rem, 3vw, 0.875rem);
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  transition: var(--transition);
+  background-color: white;
+  color: var(--dark-color);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+  transform: translateY(-1px);
+}
+
+.error-message {
+  background-color: rgba(198, 40, 40, 0.1);
+  color: var(--danger-color);
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.25rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  border-left: 4px solid var(--danger-color);
+}
+
+.login-button {
+  width: 100%;
+  padding: clamp(0.875rem, 3vw, 1rem);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 0.5rem;
+}
+
+.login-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.login-button:active {
+  transform: translateY(0);
+}
+
+.login-button:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+.login-info {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #eee;
+  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  color: #666;
+}
+
+.login-info p {
+  margin: 0.3125rem 0;
+  text-align: left;
+}
+
+/* 响应式断点优化 */
+@media (max-width: 480px) {
+  .auth-form {
+    padding: 1.25rem;
+  }
+  
+  .auth-container {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .auth-form {
+    padding: 1rem;
+  }
+  
+  .auth-container {
+    padding: 0.5rem;
+  }
+}
