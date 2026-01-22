@@ -1,105 +1,148 @@
 import { create } from 'zustand'
-import { InvestmentState, Investment, Transaction } from '../types'
+import { InvestmentState } from '../types'
+import { supabase } from '../utils/supabase'
 
-const useInvestmentStore = create<InvestmentState>((set) => ({
-  investments: [
-    // 模拟数据
-    {
-      id: '1',
-      name: '阿里巴巴股票',
-      description: '中国领先的电子商务公司',
-      initialInvestment: 10000,
-      currentValue: 12500,
-      createdAt: '2024-01-01',
-      updatedAt: '2024-01-20',
-      updatedBy: 'admin',
-      tags: ['股票', '科技', '中国'],
-      transactions: [
-        {
-          id: 't1',
-          date: '2024-01-01',
-          amount: 10000,
-          type: 'buy',
-          description: '初始购买',
-          createdBy: 'admin'
-        }
-      ]
-    },
-    {
-      id: '2',
-      name: '比特币',
-      description: '加密货币',
-      initialInvestment: 5000,
-      currentValue: 6200,
-      createdAt: '2024-01-05',
-      updatedAt: '2024-01-21',
-      updatedBy: 'user',
-      tags: ['加密货币', '数字资产'],
-      transactions: [
-        {
-          id: 't2',
-          date: '2024-01-05',
-          amount: 5000,
-          type: 'buy',
-          description: '初始购买',
-          createdBy: 'user'
-        }
-      ]
+const useInvestmentStore = create<InvestmentState>((set, get) => ({
+  investments: [],
+  loadInvestments: async () => {
+    const { data, error } = await supabase
+      .from('investments')
+      .select('*')
+    
+    if (error) {
+      console.error('Error loading investments:', error)
+      return
     }
-  ],
-  addInvestment: (investment) => {
-    const newInvestment: Investment = {
+    
+    const investmentsWithTransactions = await Promise.all(
+      data.map(async (investment) => {
+        const { data: transactions } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('investment_id', investment.id)
+        
+        return {
+          ...investment,
+          transactions: transactions || []
+        }
+      })
+    )
+    
+    set({ investments: investmentsWithTransactions })
+  },
+  addInvestment: async (investment) => {
+    const newInvestment = {
       ...investment,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0]
+      created_at: new Date().toISOString().split('T')[0],
+      updated_at: new Date().toISOString().split('T')[0]
     }
+    
+    const { data, error } = await supabase
+      .from('investments')
+      .insert(newInvestment)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error adding investment:', error)
+      return
+    }
+    
     set((state) => ({
-      investments: [...state.investments, newInvestment]
+      investments: [...state.investments, { ...data, transactions: [] }]
     }))
   },
-  updateInvestment: (id, data, updatedBy) => {
+  updateInvestment: async (id, data, updatedBy) => {
+    const updateData = {
+      ...data,
+      updated_at: new Date().toISOString().split('T')[0],
+      updated_by: updatedBy
+    }
+    
+    const { data: updatedInvestment, error } = await supabase
+      .from('investments')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error updating investment:', error)
+      return
+    }
+    
     set((state) => ({
       investments: state.investments.map(inv => {
         if (inv.id === id) {
           return {
-            ...inv,
-            ...data,
-            updatedAt: new Date().toISOString().split('T')[0],
-            updatedBy
+            ...updatedInvestment,
+            transactions: inv.transactions
           }
         }
         return inv
       })
     }))
   },
-  deleteInvestment: (id) => {
+  deleteInvestment: async (id) => {
+    const { error } = await supabase
+      .from('investments')
+      .delete()
+      .eq('id', id)
+    
+    if (error) {
+      console.error('Error deleting investment:', error)
+      return
+    }
+    
     set((state) => ({
       investments: state.investments.filter(inv => inv.id !== id)
     }))
   },
-  addTransaction: (investmentId, transaction) => {
-    const newTransaction: Transaction = {
+  addTransaction: async (investmentId, transaction) => {
+    const newTransaction = {
       ...transaction,
-      id: Date.now().toString()
+      investment_id: investmentId
     }
+    
+    const { data: createdTransaction, error } = await supabase
+      .from('transactions')
+      .insert(newTransaction)
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Error adding transaction:', error)
+      return
+    }
+    
+    const investment = get().investments.find(inv => inv.id === investmentId)
+    if (!investment) return
+    
+    let currentValue = investment.current_value
+    if (transaction.type === 'buy') {
+      currentValue += transaction.amount
+    } else if (transaction.type === 'sell') {
+      currentValue -= transaction.amount
+    }
+    
+    await supabase
+      .from('investments')
+      .update({
+        current_value: currentValue,
+        updated_at: new Date().toISOString().split('T')[0],
+        updated_by: transaction.created_by
+      })
+      .eq('id', investmentId)
+    
     set((state) => ({
       investments: state.investments.map(inv => {
         if (inv.id === investmentId) {
-          // 更新当前价值
-          let currentValue = inv.currentValue
-          if (transaction.type === 'buy') {
-            currentValue += transaction.amount
-          } else if (transaction.type === 'sell') {
-            currentValue -= transaction.amount
-          }
-          
           return {
             ...inv,
-            currentValue,
-            updatedAt: new Date().toISOString().split('T')[0],
-            updatedBy: transaction.createdBy,
-            transactions: [...inv.transactions, newTransaction]
+            current_value: currentValue,
+            updated_at: new Date().toISOString().split('T')[0],
+            updated_by: transaction.created_by,
+            transactions: [...inv.transactions, createdTransaction]
           }
         }
         return inv

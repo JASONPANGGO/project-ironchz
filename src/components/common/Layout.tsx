@@ -1,6 +1,7 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
+import { supabase } from '../../utils/supabase'
 import './Layout.css'
 
 interface LayoutProps {
@@ -10,11 +11,37 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
+  const [isConnected, setIsConnected] = useState<boolean>(false)
 
   const handleLogout = () => {
     logout()
     navigate('/')
   }
+
+  // 检测数据库连接状态
+  useEffect(() => {
+    const checkConnection = async () => {
+      try {
+        // 尝试执行一个简单的查询来测试连接
+        const { error } = await supabase
+          .from('users')
+          .select('id')
+          .limit(1)
+        
+        setIsConnected(!error)
+      } catch (error) {
+        setIsConnected(false)
+      }
+    }
+
+    // 初始检查
+    checkConnection()
+
+    // 每30秒检查一次连接状态
+    const interval = setInterval(checkConnection, 30000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <div className="layout">
@@ -61,6 +88,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <h1>{document.title}</h1>
           </div>
           <div className="nav-actions">
+            <div className="db-connection-status">
+              <div className={`db-status-indicator ${isConnected ? 'connected' : 'disconnected'}`} title={isConnected ? '数据库已连接' : '数据库未连接'}></div>
+              <span className="db-status-text">{isConnected ? '已连接' : '未连接'}</span>
+            </div>
             <span className="welcome-text">欢迎回来，{user?.username}！</span>
           </div>
         </header>

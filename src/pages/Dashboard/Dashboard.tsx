@@ -1,13 +1,18 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import useInvestmentStore from '../../store/investmentStore'
 import './Dashboard.css'
 
 const Dashboard: React.FC = () => {
-  const { investments } = useInvestmentStore()
+  const investments = useInvestmentStore((state) => state.investments)
+  const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
+
+  useEffect(() => {
+    loadInvestments()
+  }, [loadInvestments])
 
   // 计算总投资和总收益
-  const totalInvestment = investments.reduce((sum, inv) => sum + inv.initialInvestment, 0)
-  const totalCurrentValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0)
+  const totalInvestment = investments.reduce((sum, inv) => sum + inv.initial_investment, 0)
+  const totalCurrentValue = investments.reduce((sum, inv) => sum + inv.current_value, 0)
   const totalProfit = totalCurrentValue - totalInvestment
   const totalProfitPercentage = totalInvestment > 0 ? (totalProfit / totalInvestment) * 100 : 0
 
@@ -24,7 +29,7 @@ const Dashboard: React.FC = () => {
 
   // 计算每个标签的投资总额
   const tagStats = Object.entries(investmentsByTag).map(([tag, invs]) => {
-    const tagTotal = invs.reduce((sum, inv) => sum + inv.currentValue, 0)
+    const tagTotal = invs.reduce((sum, inv) => sum + inv.current_value, 0)
     const tagPercentage = (tagTotal / totalCurrentValue) * 100
     return { tag, total: tagTotal, percentage: tagPercentage }
   })
@@ -91,9 +96,9 @@ const Dashboard: React.FC = () => {
                   <p>{investment.description}</p>
                 </div>
                 <div className="investment-values">
-                  <span className="value">¥{investment.currentValue.toLocaleString()}</span>
-                  <span className={`percentage ${investment.currentValue > investment.initialInvestment ? 'profit' : 'loss'}`}>
-                    {(((investment.currentValue - investment.initialInvestment) / investment.initialInvestment) * 100).toFixed(2)}%
+                  <span className="value">¥{investment.current_value.toLocaleString()}</span>
+                  <span className={`percentage ${investment.current_value > investment.initial_investment ? 'profit' : 'loss'}`}>
+                    {(((investment.current_value - investment.initial_investment) / investment.initial_investment) * 100).toFixed(2)}%
                   </span>
                 </div>
               </div>

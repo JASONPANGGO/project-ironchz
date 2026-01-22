@@ -1,10 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import useInvestmentStore from '../../store/investmentStore'
 import useAuthStore from '../../store/authStore'
 import './Investments.css'
 
 const Investments: React.FC = () => {
-  const { investments, deleteInvestment } = useInvestmentStore()
+  const investments = useInvestmentStore((state) => state.investments)
+  const deleteInvestment = useInvestmentStore((state) => state.deleteInvestment)
+  const addInvestment = useInvestmentStore((state) => state.addInvestment)
+  const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
   const { user } = useAuthStore()
   const [showAddForm, setShowAddForm] = useState(false)
   const [newInvestment, setNewInvestment] = useState({
@@ -15,26 +18,29 @@ const Investments: React.FC = () => {
     tags: ''
   })
 
-  const handleAddInvestment = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadInvestments()
+  }, [loadInvestments])
+
+  const handleAddInvestment = async (e: React.FormEvent) => {
     e.preventDefault()
     if (user) {
-      useInvestmentStore.getState().addInvestment({
+      await addInvestment({
         name: newInvestment.name,
         description: newInvestment.description,
-        initialInvestment: parseFloat(newInvestment.initialInvestment.toString()),
-        currentValue: parseFloat(newInvestment.currentValue.toString()),
-        updatedBy: user.username,
-        tags: newInvestment.tags.split(',').map(tag => tag.trim()),
-        transactions: []
+        initial_investment: parseFloat(newInvestment.initialInvestment.toString()),
+        current_value: parseFloat(newInvestment.currentValue.toString()),
+        updated_by: user.username,
+        tags: newInvestment.tags.split(',').map(tag => tag.trim())
       })
       setNewInvestment({ name: '', description: '', initialInvestment: 0, currentValue: 0, tags: '' })
       setShowAddForm(false)
     }
   }
 
-  const handleDeleteInvestment = (id: string) => {
+  const handleDeleteInvestment = async (id: string) => {
     if (window.confirm('确定要删除这个投资项目吗？')) {
-      deleteInvestment(id)
+      await deleteInvestment(id)
     }
   }
 
@@ -104,49 +110,54 @@ const Investments: React.FC = () => {
       )}
 
       <div className="investments-list">
-        {investments.map((investment) => (
-          <div key={investment.id} className="investment-card">
-            <div className="investment-header">
-              <h3>{investment.name}</h3>
-              <div className="investment-actions">
-                <button className="edit-button">编辑</button>
-                <button className="delete-button" onClick={() => handleDeleteInvestment(investment.id)}>
-                  删除
-                </button>
+        {investments.map((investment) => {
+          const profit = investment.current_value - investment.initial_investment
+          const profitPercentage = investment.initial_investment > 0 ? (profit / investment.initial_investment) * 100 : 0
+          
+          return (
+            <div key={investment.id} className="investment-card">
+              <div className="investment-header">
+                <h3>{investment.name}</h3>
+                <div className="investment-actions">
+                  <button className="edit-button">编辑</button>
+                  <button className="delete-button" onClick={() => handleDeleteInvestment(investment.id)}>
+                    删除
+                  </button>
+                </div>
+              </div>
+              <p className="investment-description">{investment.description}</p>
+              <div className="investment-stats">
+                <div className="stat-item">
+                  <span className="stat-label">初始投资：</span>
+                  <span className="stat-value">¥{investment.initial_investment.toLocaleString()}</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">当前价值：</span>
+                  <span className={`stat-value ${profit > 0 ? 'profit' : 'loss'}`}>
+                    ¥{investment.current_value.toLocaleString()}
+                  </span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-label">收益率：</span>
+                  <span className={`stat-value ${profitPercentage > 0 ? 'profit' : 'loss'}`}>
+                    {profitPercentage.toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+              <div className="investment-meta">
+                <div className="tags">
+                  {investment.tags.map((tag, index) => (
+                    <span key={index} className="tag">{tag}</span>
+                  ))}
+                </div>
+                <div className="updated-info">
+                  <span>更新于：{investment.updated_at}</span>
+                  <span>更新者：{investment.updated_by}</span>
+                </div>
               </div>
             </div>
-            <p className="investment-description">{investment.description}</p>
-            <div className="investment-stats">
-              <div className="stat-item">
-                <span className="stat-label">初始投资：</span>
-                <span className="stat-value">¥{investment.initialInvestment.toLocaleString()}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">当前价值：</span>
-                <span className={`stat-value ${investment.currentValue > investment.initialInvestment ? 'profit' : 'loss'}`}>
-                  ¥{investment.currentValue.toLocaleString()}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">收益率：</span>
-                <span className={`stat-value ${(investment.currentValue - investment.initialInvestment) / investment.initialInvestment > 0 ? 'profit' : 'loss'}`}>
-                  {(((investment.currentValue - investment.initialInvestment) / investment.initialInvestment) * 100).toFixed(2)}%
-                </span>
-              </div>
-            </div>
-            <div className="investment-meta">
-              <div className="tags">
-                {investment.tags.map((tag, index) => (
-                  <span key={index} className="tag">{tag}</span>
-                ))}
-              </div>
-              <div className="updated-info">
-                <span>更新于：{investment.updatedAt}</span>
-                <span>更新者：{investment.updatedBy}</span>
-              </div>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

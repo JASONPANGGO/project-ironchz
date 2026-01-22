@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -29,25 +29,30 @@ ChartJS.register(
 )
 
 const Analytics: React.FC = () => {
-  const { investments } = useInvestmentStore()
+  const investments = useInvestmentStore((state) => state.investments)
+  const loadInvestments = useInvestmentStore((state) => state.loadInvestments)
+
+  useEffect(() => {
+    loadInvestments()
+  }, [loadInvestments])
 
   // 计算总投资和总收益
-  const totalInvestment = investments.reduce((sum, inv) => sum + inv.initialInvestment, 0)
-  const totalCurrentValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0)
+  const totalInvestment = investments.reduce((sum, inv) => sum + inv.initial_investment, 0)
+  const totalCurrentValue = investments.reduce((sum, inv) => sum + inv.current_value, 0)
   const totalProfit = totalCurrentValue - totalInvestment
 
   // 准备投资趋势图数据（模拟30天的数据）
   const generateTrendData = () => {
     const labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`)
     const datasets = investments.map((inv, index) => {
-      const baseValue = inv.initialInvestment
+      const baseValue = inv.initial_investment
       const data = labels.map(() => {
         // 生成随机波动的数据
         const change = (Math.random() - 0.45) * 0.1 * baseValue
         return baseValue + change
       })
       // 确保最后一个数据点是当前值
-      data[data.length - 1] = inv.currentValue
+      data[data.length - 1] = inv.current_value
 
       // 为每个投资项目生成不同的颜色
       const colors = [
@@ -77,7 +82,7 @@ const Analytics: React.FC = () => {
         if (!acc[tag]) {
           acc[tag] = 0
         }
-        acc[tag] += inv.currentValue
+        acc[tag] += inv.current_value
       })
       return acc
     }, {} as Record<string, number>)
@@ -99,7 +104,7 @@ const Analytics: React.FC = () => {
   const generateReturnData = () => {
     const labels = investments.map(inv => inv.name)
     const data = investments.map(inv => {
-      return ((inv.currentValue - inv.initialInvestment) / inv.initialInvestment) * 100
+      return inv.initial_investment > 0 ? ((inv.current_value - inv.initial_investment) / inv.initial_investment) * 100 : 0
     })
     const backgroundColor = investments.map((_, index) => {
       const colors = [
